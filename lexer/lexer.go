@@ -23,9 +23,35 @@ func (tokenizer *Tokenizer) NextToken() token.Definition {
 
 	switch tokenizer.ch {
 	case '=':
+		if tokenizer.peekChar() == '=' {
+			ch := tokenizer.ch
+			tokenizer.readCharacter()
+			literal := string(ch) + string(tokenizer.ch)
+			tok = token.Definition{Type: token.EQ, Literal: literal}
+			break
+		}
 		tok = newToken(token.ASSIGN, tokenizer.ch)
 	case '+':
 		tok = newToken(token.PLUS, tokenizer.ch)
+	case '-':
+		tok = newToken(token.MINUS, tokenizer.ch)
+	case '!':
+		if tokenizer.peekChar() == '=' {
+			ch := tokenizer.ch
+			tokenizer.readCharacter()
+			literal := string(ch) + string(tokenizer.ch)
+			tok = token.Definition{Type: token.NOT_EQ, Literal: literal}
+			break
+		}
+		tok = newToken(token.BANG, tokenizer.ch)
+	case '/':
+		tok = newToken(token.SLASH, tokenizer.ch)
+	case '*':
+		tok = newToken(token.ASTERISK, tokenizer.ch)
+	case '<':
+		tok = newToken(token.LT, tokenizer.ch)
+	case '>':
+		tok = newToken(token.GT, tokenizer.ch)
 	case '(':
 		tok = newToken(token.LPAREN, tokenizer.ch)
 	case ')':
@@ -96,6 +122,14 @@ func (tokenizer *Tokenizer) skipWhitespace() {
 	for tokenizer.ch == ' ' || tokenizer.ch == '\t' || tokenizer.ch == '\n' || tokenizer.ch == '\r' {
 		tokenizer.readCharacter()
 	}
+}
+
+func (tokenizer *Tokenizer) peekChar() byte {
+	if tokenizer.readPosition >= len(tokenizer.input) {
+		return 0
+	}
+
+	return tokenizer.input[tokenizer.readPosition]
 }
 
 func newToken(tokenType token.Type, ch byte) token.Definition {
